@@ -6,5 +6,6 @@ module.exports = {
   pwa: {
     name: 'Game Map',
     themeColor: '#9E9E9E'
-  }
+  },
+  productionSourceMap: false
 }
