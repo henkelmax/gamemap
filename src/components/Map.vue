@@ -79,8 +79,6 @@ import { v4 as uuidv4 } from "uuid";
 
 let peer;
 
-const connections = [];
-
 export default {
   name: "Map",
   components: {
@@ -163,6 +161,9 @@ export default {
         conn.on("data", (data) => {
           this.onData(conn, data);
         });
+        conn.on("close", () => {
+          window.location.reload();
+        });
       });
     },
     onData(conn, data) {
@@ -182,14 +183,13 @@ export default {
         this.$set(this.drawColors, data.id, data.color);
       } else if (data.type === "broadcast" && this.master) {
         this.onData(conn, data.data);
-        for (const c of connections) {
-          c.send(data.data);
+        for (const c of Object.values(peer.connections)) {
+          c[0].send(data.data);
         }
       }
     },
     onConnectionOpened(conn) {
       console.log(`Incoming connection from '${conn.label}', '${conn.peer}'`);
-      connections.push(conn);
       conn.send({ type: "image", image: this.url });
       for (const marker of this.markers) {
         conn.send({ type: "marker", marker: marker });
