@@ -13,19 +13,19 @@
       @contextmenu="onRightClick"
     >
       <l-image-overlay :url="url" :bounds="bounds" />
-      <template v-for="(lines, i) in Object.values(userLines)">
+      <template v-for="[id, lines] in Object.entries(userLines)">
         <l-polyline
           v-if="lines.length > 1"
           :lat-lngs="lines"
-          :color="drawColor"
-          :key="`line-${i}`"
+          :color="drawColors[id] ? drawColors[id] : '#FF0000'"
+          :key="`line-${id}`"
         />
         <l-circle-marker
           v-else-if="lines.length === 1"
           :lat-lng="{ lat: lines[0][0], lng: lines[0][1] }"
           :radius="2"
-          :color="drawColor"
-          :key="`circle-${i}`"
+          :color="drawColors[id] ? drawColors[id] : '#FF0000'"
+          :key="`circle-${id}`"
         />
       </template>
 
@@ -38,25 +38,29 @@
           <div class="text-center">
             <b>{{ marker.name }}</b>
             <br />
-            <v-btn @click="deleteMarker(marker.id)" depressed color="error"
-              >Delete</v-btn
-            >
+            <v-btn @click="deleteMarker(marker.id)" depressed color="error">
+              Delete
+            </v-btn>
           </div>
         </l-popup>
       </l-marker>
     </l-map>
     <div class="toolbox" v-if="visible">
-      <v-btn @click="drawMode = !drawMode" class="mt-2 mr-2">{{
-        drawMode ? "Disable draw mode" : "Enable draw mode"
-      }}</v-btn>
-      <v-btn v-if="drawMode" class="delete mt-2 mr-2" @click="deleteLine"
-        >Delete</v-btn
-      >
+      <v-btn @click="drawMode = !drawMode" class="mt-2 mr-2">
+        {{ drawMode ? "Disable draw mode" : "Enable draw mode" }}
+      </v-btn>
+      <v-btn v-if="drawMode" class="delete mt-2 mr-2" @click="color">
+        Color
+      </v-btn>
+      <v-btn v-if="drawMode" class="delete mt-2 mr-2" @click="deleteLine">
+        Delete
+      </v-btn>
     </div>
     <StartDialog ref="startDialog" />
     <CreateDialog ref="createDialog" />
     <IDDialog ref="idDialog" />
     <JoinDialog ref="joinDialog" />
+    <ColorDialog ref="colorDialog" />
     <v-overlay :value="overlay">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
@@ -68,6 +72,7 @@ import StartDialog from "./StartDialog.vue";
 import CreateDialog from "./CreateDialog.vue";
 import IDDialog from "./IDDialog.vue";
 import JoinDialog from "./JoinDialog.vue";
+import ColorDialog from "./ColorDialog.vue";
 import { CRS, latLng } from "leaflet";
 import Peer from "peerjs";
 import { v4 as uuidv4 } from "uuid";
@@ -83,6 +88,7 @@ export default {
     CreateDialog,
     IDDialog,
     JoinDialog,
+    ColorDialog,
   },
   data() {
     return {
@@ -99,12 +105,13 @@ export default {
       zoom: 0,
       center: latLng(0, 0),
       drawMode: false,
-      drawColor: "#FF0000",
+      drawColors: {},
       userLines: [],
       markers: [],
       crs: CRS.Simple,
       master: false,
       id: "",
+      remoteID: "",
     };
   },
   mounted() {
@@ -152,6 +159,7 @@ export default {
       console.log(`Joining to '${data.id}'`);
       const conn = peer.connect(data.id, { label: data.name });
       conn.on("open", () => {
+        this.remoteID = data.id;
         conn.on("data", (data) => {
           this.onData(conn, data);
         });
@@ -169,6 +177,9 @@ export default {
       } else if (data.type === "line") {
         this.$delete(this.userLines, data.id);
         this.$set(this.userLines, data.id, data.lines);
+      } else if (data.type === "color") {
+        this.$delete(this.drawColors, data.id);
+        this.$set(this.drawColors, data.id, data.color);
       } else if (data.type === "broadcast" && this.master) {
         this.onData(conn, data.data);
         for (const c of connections) {
@@ -185,6 +196,9 @@ export default {
       }
       for (const [id, lines] of Object.entries(this.userLines)) {
         conn.send({ type: "line", lines: lines, id: id });
+      }
+      for (const [id, color] of Object.entries(this.drawColors)) {
+        conn.send({ type: "color", color: color, id: id });
       }
     },
     onClick(latlng) {},
@@ -241,6 +255,11 @@ export default {
     deleteMarker(id) {
       this.broadcastPacket({ type: "delete_marker", id: id });
     },
+    color() {
+      this.$refs.colorDialog.open(this.drawColors).then((color) => {
+        this.broadcastPacket({ type: "color", id: this.id, color: color.hex });
+      });
+    },
     deleteLine() {
       if (!this.userLines[peer.id]) {
         return;
@@ -262,6 +281,11 @@ export default {
         ];
         this.center = latLng(size.height / 2, size.width / 2);
       });
+    },
+  },
+  computed: {
+    masterID() {
+      return this.master ? this.id : this.remoteID;
     },
   },
 };

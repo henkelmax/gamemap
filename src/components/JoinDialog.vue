@@ -31,6 +31,8 @@
 </template>
 
 <script>
+import { uniqueNamesGenerator, colors, animals } from "unique-names-generator";
+
 export default {
   data: () => ({
     active: false,
@@ -53,6 +55,13 @@ export default {
         "Name must be only lowercase letters and numbers",
     ],
   }),
+  created() {
+    this.name = uniqueNamesGenerator({
+      dictionaries: [colors, animals],
+      style: "capital",
+      separator: " ",
+    });
+  },
   methods: {
     open() {
       this.active = true;

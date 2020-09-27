@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     copyID() {
-      this.$clipboard(this.$refs.map.id);
+      this.$clipboard(this.$refs.map.masterID);
       this.text = "Copied to clipboard";
       this.snackbar = true;
     },

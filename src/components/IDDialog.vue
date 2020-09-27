@@ -20,19 +20,14 @@ export default {
   data: () => ({
     id: "",
     active: false,
-    resolve: null,
   }),
   methods: {
     open(id) {
       this.id = id;
       this.active = true;
-      return new Promise((resolve, reject) => {
-        this.resolve = resolve;
-      });
     },
     close() {
       this.active = false;
-      this.resolve(true);
     },
   },
 };

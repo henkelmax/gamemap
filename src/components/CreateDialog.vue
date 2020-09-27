@@ -32,6 +32,8 @@
 </template>
 
 <script>
+import { uniqueNamesGenerator, colors, animals } from "unique-names-generator";
+
 export default {
   data: () => ({
     valid: false,
@@ -50,6 +52,13 @@ export default {
     active: false,
     resolve: null,
   }),
+  created() {
+    this.name = uniqueNamesGenerator({
+      dictionaries: [colors, animals],
+      style: "capital",
+      separator: " ",
+    });
+  },
   methods: {
     open(id) {
       this.id = id;
