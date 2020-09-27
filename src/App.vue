@@ -6,6 +6,7 @@
           <span>Game Map</span>
         </v-toolbar-title>
         <v-btn text rounded class="ml-4" @click="copyID">Copy ID</v-btn>
+        <v-btn text rounded class="ml-2" @click="exit">Exit</v-btn>
         <v-spacer></v-spacer>
         <v-btn text rounded v-if="!!installPrompt" @click="installPWA">
           <v-icon>mdi-download</v-icon>Install
@@ -62,6 +63,9 @@ export default {
           this.installPrompt = null;
         }
       });
+    },
+    exit() {
+      window.location.reload();
     },
   },
 };

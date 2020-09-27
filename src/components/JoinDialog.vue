@@ -23,7 +23,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text :disabled="!valid" @click="join()">Join</v-btn>
+          <v-btn text @click="back">Back</v-btn>
+          <v-btn text :disabled="!valid" @click="join">Join</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -72,6 +73,9 @@ export default {
     join() {
       this.active = false;
       this.resolve({ name: this.name, id: this.id });
+    },
+    back() {
+      window.location.reload();
     },
   },
 };

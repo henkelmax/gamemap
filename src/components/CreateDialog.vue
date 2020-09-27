@@ -24,6 +24,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
+          <v-btn text @click="back">Back</v-btn>
           <v-btn text :disabled="!valid || !file" @click="cont">Continue</v-btn>
         </v-card-actions>
       </v-card>
@@ -70,6 +71,9 @@ export default {
     cont() {
       this.active = false;
       this.resolve({ name: this.name, file: this.file });
+    },
+    back() {
+      window.location.reload();
     },
   },
 };
