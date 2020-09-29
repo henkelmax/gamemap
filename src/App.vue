@@ -11,7 +11,7 @@
         <v-btn text rounded v-if="!!installPrompt" @click="installPWA">
           <v-icon>mdi-download</v-icon>Install
         </v-btn>
-        <v-btn text rounded href="https://github.com/henkelmax" target="_blank">
+        <v-btn text rounded href="https://github.com/henkelmax/gamemap" target="_blank">
           <v-icon>mdi-open-in-new</v-icon>GitHub
         </v-btn>
       </v-app-bar>
